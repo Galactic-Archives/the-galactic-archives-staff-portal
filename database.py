@@ -10,11 +10,13 @@ async def init_postgres() -> None:
     """Initialize PostgreSQL connection pool and create tables"""
     global conn_pool
     try:
+        # Create the connection pool using the DATABASE_URL environment variable
         conn_pool = await asyncpg.create_pool(os.getenv("DATABASE_URL"))
         logger.info("PostgreSQL connection pool initialized")
 
-        # Create tables
+        # Acquire a connection to run the schema creation scripts
         async with conn_pool.acquire() as conn:
+            # 1. Users Table (Updated with is_staff column)
             await conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS users (
@@ -22,12 +24,14 @@ async def init_postgres() -> None:
                     email VARCHAR(255) UNIQUE NOT NULL,
                     username VARCHAR(255) UNIQUE NOT NULL,
                     hashed_password VARCHAR(255) NOT NULL,
+                    is_staff BOOLEAN DEFAULT FALSE,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """
             )
 
+            # 2. Tickets Table
             await conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS tickets (
@@ -43,6 +47,7 @@ async def init_postgres() -> None:
                 """
             )
 
+            # 3. Knowledge Base Articles Table
             await conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS kb_articles (
@@ -57,6 +62,7 @@ async def init_postgres() -> None:
                 """
             )
 
+            # 4. Ticket Messages Table (For staff/user conversation history)
             await conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS ticket_messages (
