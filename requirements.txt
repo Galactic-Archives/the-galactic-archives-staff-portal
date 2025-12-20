@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]==0.24.0
 gunicorn==21.2.0
+Cython>=3.0.0
 asyncpg==0.31.0
 sqlalchemy==2.0.23
 python-dotenv==1.0.0
